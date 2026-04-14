@@ -1,0 +1,333 @@
+/* 版式装配引擎 设计系统 v3.0 — Notion 暖极简风格 */
+/* 灵感来源: Notion / DESIGN.md warm editorial minimalism */
+:root {
+  /* ===== 核心页面背景 ===== */
+  --color-bg-page: #ffffff;
+  --color-bg-warm: #f6f5f4;           /* 暖白色背景 — 节区分割 */
+  --color-bg-muted: #efeee9;          /* 更深的暖灰 */
+  --color-bg-card: #ffffff;
+
+  /* ===== 文字颜色体系 ===== */
+  --color-text-primary: rgba(0, 0, 0, 0.95);     /* 近黑 — 标题、正文 */
+  --color-text-secondary: #615d59;               /* 暖灰 500 — 副文本 */
+  --color-text-muted: #a39e98;                   /* 暖灰 300 — 占位/禁用 */
+  --color-text-inverse: #ffffff;
+
+  /* ===== 品牌蓝 ===== */
+  --color-accent-primary: #0075de;     /* Notion Blue — 唯一强调色 */
+  --color-accent-hover: #005bab;       /* 按压/悬停态 */
+  --color-accent-soft: rgba(0, 117, 222, 0.08);
+  --color-accent-focus: rgba(0, 117, 222, 0.15);
+  --color-badge-bg: #f2f9ff;
+  --color-badge-text: #097fe8;
+
+  /* ===== 内容区域（兼容旧变量名） ===== */
+  --color-content-bg: #f6f5f4;
+  --color-content-bg-soft: #fafaf9;
+  --color-content-bg-muted: #efeee9;
+  --color-content-card: #ffffff;
+  --color-content-border: rgba(0, 0, 0, 0.1);
+  --color-content-border-subtle: rgba(0, 0, 0, 0.06);
+  --color-content-text: rgba(0, 0, 0, 0.95);
+  --color-content-text-secondary: #615d59;
+  --color-content-text-muted: #a39e98;
+
+  /* ===== 深色区域（旧版兼容，用于部分组件） ===== */
+  --color-bg-primary: #1a1a1e;
+  --color-bg-secondary: #141418;
+  --color-bg-tertiary: #1f1f26;
+  --color-bg-elevated: #242430;
+  --color-border-default: rgba(0, 0, 0, 0.1);
+
+  /* ===== 其他 accent（旧版兼容） ===== */
+  --color-gold-primary: #c4956a;
+  --color-ai-primary: #0075de;
+  --color-ai-soft: rgba(0, 117, 222, 0.06);
+  --color-ai-hover: rgba(0, 117, 222, 0.12);
+
+  /* Semantic State Colors */
+  --color-success: #16a34a;
+  --color-success-light: #f0fdf4;
+  --color-success-border: #bbf7d0;
+  --color-error: #dc2626;
+  --color-error-light: #fef2f2;
+  --color-error-border: #fecaca;
+  --color-warning: #d97706;
+  --color-warning-light: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-danger: #e53e3e;
+  --color-danger-light: #fff1f2;
+
+  /* ===== 边框体系 ===== */
+  --border-whisper: 1px solid rgba(0, 0, 0, 0.1);
+  --border-subtle: 1px solid rgba(0, 0, 0, 0.07);
+  --border-input: 1px solid rgba(0, 0, 0, 0.15);
+
+  /* ===== 阴影体系 — 多层叠加，极低单层透明度 ===== */
+  --shadow-card: rgba(0,0,0,0.04) 0px 4px 18px,
+                 rgba(0,0,0,0.027) 0px 2px 7.85px,
+                 rgba(0,0,0,0.02) 0px 0.8px 2.93px,
+                 rgba(0,0,0,0.01) 0px 0.175px 1.04px;
+  --shadow-float: rgba(0,0,0,0.08) 0px 8px 32px,
+                  rgba(0,0,0,0.05) 0px 3px 12px,
+                  rgba(0,0,0,0.03) 0px 1px 4px;
+  --shadow-modal: rgba(0,0,0,0.12) 0px 20px 60px,
+                  rgba(0,0,0,0.08) 0px 8px 24px,
+                  rgba(0,0,0,0.04) 0px 2px 8px;
+  --shadow-content-card: rgba(0,0,0,0.04) 0px 2px 8px,
+                         rgba(0,0,0,0.02) 0px 1px 3px;
+  --shadow-content-hover: rgba(0,0,0,0.07) 0px 6px 20px,
+                          rgba(0,0,0,0.04) 0px 2px 8px;
+  --shadow-content-selected: 0 0 0 2px rgba(0, 117, 222, 0.25);
+  --shadow-accent: 0 4px 16px rgba(0, 117, 222, 0.2);
+  --shadow-md: var(--shadow-float);
+
+  /* ===== 圆角体系 ===== */
+  --radius-xs: 4px;    /* 按钮、输入框 */
+  --radius-sm: 6px;    /* 小型控件 */
+  --radius-md: 12px;   /* 标准卡片 */
+  --radius-lg: 16px;   /* 大型卡片、英雄区 */
+  --radius-pill: 9999px;
+
+  /* ===== 间距 ===== */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 48px;
+  --space-2xl: 80px;
+
+  /* ===== 动画 ===== */
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ===== 字体 ===== */
+  --font-display: "Inter", -apple-system, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-body: "Inter", -apple-system, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", "Menlo", monospace;
+
+  /* ===== 灰度兼容 ===== */
+  --gray-50: #fafaf9;
+  --gray-200: rgba(0, 0, 0, 0.1);
+  --primary-color: #0075de;
+}
+
+.magazine-bg {
+  background:
+    radial-gradient(1200px 600px at 10% 0%, rgba(255, 107, 74, 0.08), transparent 60%),
+    radial-gradient(1000px 500px at 90% 10%, rgba(212, 165, 116, 0.08), transparent 55%),
+    linear-gradient(180deg, var(--color-bg-secondary) 0%, var(--color-bg-primary) 100%);
+}
+
+.magazine-page-enter {
+  animation: magazine-page-enter 0.6s var(--ease-out-expo) both;
+}
+
+.magazine-stagger-1 {
+  animation-delay: 0.05s;
+}
+
+.magazine-stagger-2 {
+  animation-delay: 0.12s;
+}
+
+@keyframes magazine-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.magazine-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+
+  @media (min-width: 768px) {
+    font-size: 0.75rem;
+  }
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-gold-primary);
+  background: rgba(212, 165, 116, 0.12);
+  border: 1px solid rgba(212, 165, 116, 0.25);
+}
+
+.magazine-title-lg {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+
+  @media (min-width: 768px) {
+    font-size: 1.5rem;
+  }
+
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.magazine-title-md {
+  font-family: var(--font-display);
+  font-size: 1rem;
+
+  @media (min-width: 768px) {
+    font-size: 1.125rem;
+  }
+
+  line-height: 1.3;
+}
+
+.magazine-title-sm {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+
+  @media (min-width: 768px) {
+    font-size: 1rem;
+  }
+
+  line-height: 1.3;
+}
+
+.magazine-body-sm {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+
+  @media (min-width: 768px) {
+    font-size: 0.875rem;
+  }
+
+  line-height: 1.6;
+}
+
+.magazine-input,
+.magazine-textarea {
+  width: 100%;
+  background: var(--color-content-card);
+  border: 1px solid var(--color-content-border);
+  color: var(--color-content-text);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  transition: all var(--duration-fast) ease;
+}
+
+/* 适用于深色背景的输入框变体 */
+.magazine-input-dark {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+}
+
+.magazine-input-dark:focus {
+  border-color: var(--color-accent-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.magazine-input:focus,
+.magazine-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 3px var(--color-accent-focus);
+  background: white;
+}
+
+.magazine-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* ========================================
+   🆕 统一的步骤页面内容区域样式
+   解决黑白配色过于生硬的问题
+   ======================================== */
+
+/* 步骤页面的主容器 - 使用暖白色渐变背景 */
+.step-content-area {
+  background: linear-gradient(180deg,
+      var(--color-content-bg-soft) 0%,
+      var(--color-content-bg) 100%);
+  min-height: 100%;
+}
+
+/* 步骤页面的头部区域 - 保持深色但有渐变过渡 */
+.step-header {
+  background: linear-gradient(180deg,
+      var(--color-bg-secondary) 0%,
+      var(--color-bg-tertiary) 100%);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+/* 内容卡片 — 无边框、轻阴影、呼吸感 */
+.content-card {
+  background: var(--color-content-card);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-content-card);
+  color: var(--color-content-text);
+  transition: box-shadow var(--duration-normal) var(--ease-smooth),
+              transform var(--duration-normal) var(--ease-smooth);
+}
+
+.content-card:hover {
+  box-shadow: var(--shadow-content-hover);
+}
+
+/* 编辑区域的文本框样式 - 统一暖色调 */
+.content-textarea {
+  background: var(--color-content-card);
+  border: 1px solid var(--color-content-border);
+  color: var(--color-content-text);
+  border-radius: var(--radius-sm);
+}
+
+.content-textarea:focus {
+  outline: none;
+  border-color: var(--color-accent-primary);
+  box-shadow: 0 0 0 3px var(--color-accent-focus);
+}
+
+/* 预览容器 - 柔和的渐变背景 */
+.preview-container {
+  background: linear-gradient(135deg,
+      #e8e6e3 0%,
+      #f0eeeb 50%,
+      #f5f4f2 100%);
+}
+
+/* 预览内容区域 */
+.preview-content {
+  background: var(--color-content-card);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* 真机预览外壳 - 使用深灰渐变而非纯黑 */
+.mobile-frame {
+  background: linear-gradient(145deg,
+      #2a2a30 0%,
+      #1a1a1f 50%,
+      #252528 100%);
+  border: 8px solid #3a3a42;
+  border-radius: 50px;
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 过渡层 - 在深色和浅色之间的柔和过渡 */
+.transition-layer {
+  background: linear-gradient(180deg,
+      rgba(20, 20, 25, 0.95) 0%,
+      rgba(248, 247, 244, 0.98) 100%);
+  backdrop-filter: blur(10px);
+}

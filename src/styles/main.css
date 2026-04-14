@@ -1,0 +1,306 @@
+/* ========================================
+   杂志美学设计系统 - 主入口
+   Magazine Aesthetics Design System - Main Entry
+   ======================================== */
+
+/* 导入杂志美学设计系统 */
+@import './magazine-design-system.css';
+
+/* 导入 Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* ===== 按钮组件 — Notion 风格扁平 ===== */
+  .magazine-btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-[150ms];
+    border-radius: var(--radius-xs);
+  }
+
+  .magazine-btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white transition-all duration-[150ms];
+    background: var(--color-accent-primary);
+    border-radius: var(--radius-xs);
+    border: 1px solid transparent;
+  }
+  .magazine-btn-primary:hover {
+    background: var(--color-accent-hover);
+  }
+  .magazine-btn-primary:active {
+    transform: scale(0.97);
+  }
+
+  .magazine-btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all duration-[150ms];
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-xs);
+    border: 1px solid transparent;
+  }
+  .magazine-btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  /* ===== 卡片组件 ===== */
+  .notion-card {
+    background: var(--color-bg-card);
+    border: var(--border-whisper);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--duration-normal) var(--ease-smooth);
+  }
+  .notion-card:hover {
+    box-shadow: var(--shadow-content-hover);
+  }
+
+  /* ===== 输入框组件 ===== */
+  .notion-input {
+    background: var(--color-bg-card);
+    border: var(--border-input);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    @apply px-3 py-2 text-sm w-full;
+    transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+  }
+  .notion-input::placeholder {
+    color: var(--color-text-muted);
+  }
+  .notion-input:focus {
+    outline: none;
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 0 3px var(--color-accent-focus);
+  }
+
+  /* ===== 徽章 ===== */
+  .notion-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: var(--color-badge-bg);
+    color: var(--color-badge-text);
+  }
+  .notion-badge-success {
+    background: var(--color-success-light);
+    color: var(--color-success);
+  }
+  .notion-badge-warn {
+    background: #fff7ed;
+    color: #c2410c;
+  }
+}
+
+/* ========================================
+   全局覆盖和增强
+   ======================================== */
+
+/* 应用根元素 */
+#app {
+  @apply h-screen;
+  background-color: var(--color-bg-page);
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+}
+
+/* 基础样式 */
+body {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-page);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+/* 确保所有内容在背景之上 */
+#app>* {
+  position: relative;
+  z-index: 1;
+}
+
+/* ========================================
+   Tailwind 自定义扩展
+   ======================================== */
+
+/* 自定义颜色工具类 */
+.bg-magazine-primary {
+  background-color: var(--color-bg-primary);
+}
+
+.bg-magazine-secondary {
+  background-color: var(--color-bg-secondary);
+}
+
+.bg-magazine-elevated {
+  background-color: var(--color-bg-elevated);
+}
+
+.text-magazine-accent {
+  color: var(--color-accent-primary);
+}
+
+.text-magazine-gold {
+  color: var(--color-gold-primary);
+}
+
+.border-magazine {
+  border-color: var(--color-border-default);
+}
+
+/* 自定义字体工具类 */
+.font-magazine-display {
+  font-family: var(--font-display);
+}
+
+.font-magazine-body {
+  font-family: var(--font-body);
+}
+
+/* ========================================
+   组件样式增强
+   ======================================== */
+
+/* 容器 */
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* 按钮增强 */
+.btn-primary {
+  @apply magazine-btn-primary;
+}
+
+.btn-secondary {
+  @apply magazine-btn-secondary;
+}
+
+/* 隐藏滚动条但保留功能 */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ========================================
+   页面过渡动画
+   ======================================== */
+.page-enter-active {
+  transition: all 0.4s var(--ease-out-expo);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ========================================
+   Vue 过渡动画
+   ======================================== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active {
+  transition: all 0.4s var(--ease-out-expo);
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.slide-up-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ========================================
+   加载状态样式
+   ======================================== */
+.skeleton {
+  background: linear-gradient(90deg,
+      rgba(0,0,0,0.06) 0%,
+      rgba(0,0,0,0.03) 50%,
+      rgba(0,0,0,0.06) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ========================================
+   工具提示样式
+   ======================================== */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--duration-fast) ease;
+  pointer-events: none;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* ========================================
+   焦点状态增强
+   ======================================== */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ========================================
+   打印样式
+   ======================================== */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

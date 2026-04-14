@@ -1,0 +1,266 @@
+<script setup lang="ts">
+import { ref, watch, nextTick } from 'vue'
+import type { Editor } from '@tiptap/vue-3'
+
+const props = defineProps<{ editor: Editor | null; visible: boolean }>()
+const emit = defineEmits<{ (e: 'close'): void }>()
+
+const findText = ref('')
+const replaceText = ref('')
+const matchCount = ref(0)
+const currentMatch = ref(0)
+const findInputRef = ref<HTMLInputElement | null>(null)
+
+// Search options
+const caseSensitive = ref(false)
+const wholeWord = ref(false)
+const useRegex = ref(false)
+const regexError = ref('')
+
+// Decorations stored as positions
+let matchPositions: { from: number; to: number }[] = []
+
+watch(() => props.visible, (val) => {
+  if (val) {
+    nextTick(() => findInputRef.value?.focus())
+  } else {
+    clearHighlights()
+    findText.value = ''
+    replaceText.value = ''
+  }
+})
+
+watch([findText, caseSensitive, wholeWord, useRegex], () => {
+  doFind()
+})
+
+function buildSearchPattern(): { regex: RegExp | null; plain: string | null } {
+  regexError.value = ''
+  if (!findText.value) return { regex: null, plain: null }
+
+  if (useRegex.value) {
+    try {
+      const flags = caseSensitive.value ? 'g' : 'gi'
+      const regex = new RegExp(findText.value, flags)
+      return { regex, plain: null }
+    } catch (e: any) {
+      regexError.value = e.message || 'Invalid regex'
+      return { regex: null, plain: null }
+    }
+  }
+
+  return { regex: null, plain: findText.value }
+}
+
+function doFind() {
+  clearHighlights()
+  if (!props.editor || !findText.value) {
+    matchCount.value = 0
+    currentMatch.value = 0
+    return
+  }
+
+  const { regex, plain } = buildSearchPattern()
+  if (!regex && !plain) {
+    matchCount.value = 0
+    currentMatch.value = 0
+    return
+  }
+
+  const doc = props.editor.state.doc
+  matchPositions = []
+
+  doc.descendants((node, pos) => {
+    if (node.isText && node.text) {
+      const text = node.text
+
+      if (regex) {
+        // Reset regex lastIndex for each node
+        regex.lastIndex = 0
+        let m: RegExpExecArray | null
+        while ((m = regex.exec(text)) !== null) {
+          if (m[0].length === 0) { regex.lastIndex++; continue } // prevent infinite loop
+          matchPositions.push({ from: pos + m.index, to: pos + m.index + m[0].length })
+        }
+      } else if (plain) {
+        const searchText = caseSensitive.value ? text : text.toLowerCase()
+        const searchTerm = caseSensitive.value ? plain : plain.toLowerCase()
+        let idx = searchText.indexOf(searchTerm)
+        while (idx !== -1) {
+          if (wholeWord.value) {
+            const before = idx > 0 ? searchText[idx - 1] : ' '
+            const after = idx + searchTerm.length < searchText.length ? searchText[idx + searchTerm.length] : ' '
+            const isBoundary = (c: string) => /[\s\p{P}]/u.test(c)
+            if (isBoundary(before) && isBoundary(after)) {
+              matchPositions.push({ from: pos + idx, to: pos + idx + plain.length })
+            }
+          } else {
+            matchPositions.push({ from: pos + idx, to: pos + idx + plain.length })
+          }
+          idx = searchText.indexOf(searchTerm, idx + 1)
+        }
+      }
+    }
+  })
+
+  matchCount.value = matchPositions.length
+  currentMatch.value = matchPositions.length > 0 ? 1 : 0
+
+  if (matchPositions.length > 0) {
+    scrollToMatch(0)
+  }
+}
+
+function scrollToMatch(index: number) {
+  if (!props.editor || matchPositions.length === 0) return
+  const match = matchPositions[index]
+  props.editor.chain().setTextSelection(match).scrollIntoView().run()
+}
+
+function findNext() {
+  if (matchPositions.length === 0) return
+  currentMatch.value = currentMatch.value >= matchPositions.length ? 1 : currentMatch.value + 1
+  scrollToMatch(currentMatch.value - 1)
+}
+
+function findPrev() {
+  if (matchPositions.length === 0) return
+  currentMatch.value = currentMatch.value <= 1 ? matchPositions.length : currentMatch.value - 1
+  scrollToMatch(currentMatch.value - 1)
+}
+
+function replaceCurrent() {
+  if (!props.editor || matchPositions.length === 0 || currentMatch.value === 0) return
+  const match = matchPositions[currentMatch.value - 1]
+  props.editor.chain()
+    .setTextSelection(match)
+    .deleteSelection()
+    .insertContent(replaceText.value)
+    .run()
+  doFind()
+}
+
+function replaceAll() {
+  if (!props.editor || matchPositions.length === 0) return
+  // Replace from end to start to preserve positions
+  const sorted = [...matchPositions].sort((a, b) => b.from - a.from)
+  const chain = props.editor.chain()
+  for (const match of sorted) {
+    chain.setTextSelection(match).deleteSelection().insertContent(replaceText.value)
+  }
+  chain.run()
+  doFind()
+}
+
+function clearHighlights() {
+  matchPositions = []
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    emit('close')
+  } else if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    findNext()
+  } else if (e.key === 'Enter' && e.shiftKey) {
+    e.preventDefault()
+    findPrev()
+  }
+}
+</script>
+
+<template>
+  <Transition
+    enter-active-class="transition-all duration-150 ease-out"
+    leave-active-class="transition-all duration-100 ease-in"
+    enter-from-class="opacity-0 scale-95"
+    leave-to-class="opacity-0 scale-95"
+  >
+  <div
+    v-if="visible"
+    class="absolute top-0 right-4 z-30 bg-white border rounded-lg shadow-lg p-3 w-80"
+    @keydown="handleKeydown"
+  >
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-xs font-medium" style="color:rgba(0,0,0,0.65);">查找与替换</span>
+      <button class="text-sm" style="color:var(--color-text-muted);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="emit('close')" title="关闭" aria-label="关闭查找替换">&times;</button>
+    </div>
+
+    <div class="space-y-2">
+      <div class="flex items-center gap-1">
+        <input
+          ref="findInputRef"
+          v-model="findText"
+          class="flex-1 text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1" style="--tw-ring-color:var(--color-accent-primary);"
+          :class="regexError ? 'border-red-400' : ''"
+          placeholder="查找..."
+        />
+        <span class="text-xs w-12 text-center whitespace-nowrap" style="color:var(--color-text-muted);">
+          {{ matchCount > 0 ? `${currentMatch}/${matchCount}` : '0' }}
+        </span>
+      </div>
+
+      <!-- Search options -->
+      <div class="flex items-center gap-1">
+        <button
+          class="text-[10px] px-1.5 py-0.5 rounded border transition-colors font-mono"
+          :style="caseSensitive ? 'background:var(--color-badge-bg); color:var(--color-accent-primary); border-color:rgba(0,117,222,0.3);' : 'color:rgba(0,0,0,0.35); border-color:rgba(0,0,0,0.12);'"
+          @click="caseSensitive = !caseSensitive"
+          title="区分大小写"
+        >Aa</button>
+        <button
+          class="text-[10px] px-1.5 py-0.5 rounded border transition-colors"
+          :style="wholeWord ? 'background:var(--color-badge-bg); color:var(--color-accent-primary); border-color:rgba(0,117,222,0.3);' : 'color:rgba(0,0,0,0.35); border-color:rgba(0,0,0,0.12);'"
+          @click="wholeWord = !wholeWord"
+          :disabled="useRegex"
+          title="全字匹配"
+        >W</button>
+        <button
+          class="text-[10px] px-1.5 py-0.5 rounded border transition-colors font-mono"
+          :style="useRegex ? 'background:var(--color-badge-bg); color:var(--color-accent-primary); border-color:rgba(0,117,222,0.3);' : 'color:rgba(0,0,0,0.35); border-color:rgba(0,0,0,0.12);'"
+          @click="useRegex = !useRegex"
+          title="正则表达式"
+        >.*</button>
+        <span v-if="regexError" class="text-[10px] text-red-500 truncate flex-1" :title="regexError">{{ regexError }}</span>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <input
+          v-model="replaceText"
+          class="flex-1 text-sm border rounded px-2 py-1 focus:outline-none focus:ring-1" style="--tw-ring-color:var(--color-accent-primary);"
+          placeholder="替换..."
+        />
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button
+          class="text-xs px-2 py-1 rounded border"
+          style="border-color:rgba(0,0,0,0.08); color:rgba(0,0,0,0.55);"
+          onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''"
+          @click="findPrev"
+          title="上一个 (Shift+Enter)"
+        >&#x2191;</button>
+        <button
+          class="text-xs px-2 py-1 rounded border"
+          style="border-color:rgba(0,0,0,0.08); color:rgba(0,0,0,0.55);"
+          onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''"
+          @click="findNext"
+          title="下一个 (Enter)"
+        >&#x2193;</button>
+        <button
+          class="text-xs px-2 py-1 rounded border"
+          style="border-color:rgba(0,0,0,0.08); color:rgba(0,0,0,0.55);"
+          onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''"
+          @click="replaceCurrent"
+        >替换</button>
+        <button
+          class="text-xs px-2 py-1 rounded border"
+          style="border-color:rgba(0,0,0,0.08); color:rgba(0,0,0,0.55);"
+          onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''"
+          @click="replaceAll"
+        >全部替换</button>
+      </div>
+    </div>
+  </div>
+  </Transition>
+</template>
