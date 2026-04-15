@@ -653,7 +653,7 @@ const getBlockPlaceholder = (type: string) => {
 }
 
 const goToPreviousStep = () => {
-  router.push('/step1')
+  router.push('/')
 }
 
 const goToNextStep = async () => {
@@ -666,7 +666,7 @@ const goToNextStep = async () => {
       await showAlert('请先在左侧选择装饰样式后再进入预览阶段！')
       return
     }
-    router.push('/step3')
+    router.push('/preview')
   }
 }
 
@@ -714,7 +714,7 @@ onMounted(() => {
     }
   }
   if (contentBlocks.value.length === 0 && !appStore.rawText) {
-    router.push('/step1')
+    router.push('/')
   }
 })
 

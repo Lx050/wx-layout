@@ -720,11 +720,11 @@ function retryEditorCreation() {
 }
 
 function goBack() {
-  router.push('/step1')
+  router.push('/')
 }
 
 function goToPublish() {
-  router.push('/step3')
+  router.push('/preview')
 }
 </script>
 

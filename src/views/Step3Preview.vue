@@ -565,7 +565,7 @@ const updateIframeImageDom = (placeholderId: string, newUrl: string) => {
 
 const goToPreviousStep = () => {
   appStore.currentStep = 2
-  router.push('/step2')
+  router.push('/editor')
 }
 
 

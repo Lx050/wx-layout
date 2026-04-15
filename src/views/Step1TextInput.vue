@@ -614,7 +614,7 @@ const goToNextStep = () => {
   }
 
   // 导航到下一步（不等待上传完成）
-  router.push('/step2')
+  router.push('/editor')
 }
 </script>
 
