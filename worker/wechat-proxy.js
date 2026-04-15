@@ -25,6 +25,11 @@ const ALLOWED_PATHS = [
 
 export default {
   async fetch(request, env) {
+    // 处理 CORS 预检请求（浏览器在实际请求前发送 OPTIONS）
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders('') })
+    }
+
     const url = new URL(request.url)
 
     // 健康检查端点（设置页测试连接用）
@@ -106,10 +111,12 @@ async function getAccessToken(env) {
 }
 
 function corsHeaders(contentType) {
-  return {
-    'Content-Type': contentType,
+  const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
   }
+  if (contentType) headers['Content-Type'] = contentType
+  return headers
 }
