@@ -15,6 +15,14 @@ const imageInput = ref<HTMLInputElement | null>(null)
 const canUndo = computed(() => props.editor?.can().undo() ?? false)
 const canRedo = computed(() => props.editor?.can().redo() ?? false)
 
+// Save selection before the <select> steals focus from the editor
+let savedSelection: { from: number; to: number } | null = null
+function onSelectMousedown() {
+  if (!props.editor) return
+  const { from, to } = props.editor.state.selection
+  savedSelection = { from, to }
+}
+
 function isActive(name: string, attrs?: Record<string, unknown>): boolean {
   return props.editor?.isActive(name, attrs) ?? false
 }
@@ -54,6 +62,11 @@ const currentBlockType = computed<BlockType>(() => {
 
 function setBlockType(type: BlockType) {
   if (!props.editor) return
+  // Restore selection that was lost when <select> stole focus
+  if (savedSelection) {
+    props.editor.chain().setTextSelection(savedSelection).run()
+    savedSelection = null
+  }
   const chain = props.editor.chain().focus()
   switch (type) {
     case 'h1': chain.setNode('manifoldHeading', { level: 1 }).run(); break
@@ -97,6 +110,7 @@ function toggleLink() {
     <select
       class="block-type-select"
       :value="currentBlockType"
+      @mousedown="onSelectMousedown"
       @change="setBlockType(($event.target as HTMLSelectElement).value as BlockType)"
       title="块类型"
     >

@@ -117,20 +117,22 @@ export const DragHandle = Extension.create({
       const domNode = view.nodeDOM(nodePos) as HTMLElement
       if (!domNode || !barEl) return false
 
+      const wrapper = view.dom.parentElement as HTMLElement
       const editorRect = view.dom.getBoundingClientRect()
       const nodeRect = domNode.getBoundingClientRect()
 
-      // Position centered on the top border of the block (straddles the border line)
-      const barHeight = 26 // approximate height of the bar
-      const top = nodeRect.top - editorRect.top - (barHeight / 2)
-      // Center horizontally within the block
+      // Snap bar to the TOP of the block, fully inside (4px from block's top edge).
+      // Add wrapper.scrollTop so position stays correct when editor is scrolled.
+      const scrollTop = wrapper ? wrapper.scrollTop : 0
+      const top = nodeRect.top - editorRect.top + scrollTop + 4
+
       const blockLeft = nodeRect.left - editorRect.left
       const blockWidth = nodeRect.width
       barEl.style.top = `${top}px`
       barEl.style.left = `${blockLeft}px`
       barEl.style.right = 'auto'
       barEl.style.width = `${blockWidth}px`
-      barEl.style.justifyContent = 'center'
+      barEl.style.justifyContent = 'flex-end' // align to right edge of block
       return true
     }
 
