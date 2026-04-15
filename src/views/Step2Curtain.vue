@@ -260,26 +260,27 @@
                     <span class="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded-full" style="background: var(--color-ai-primary); color: white;">AI</span>
                   </div>
 
-                  <!-- 输入框 — 无边框，聚焦态底线 -->
-                  <input
-                    v-if="block.type === 'title'"
-                    type="text"
-                    v-model="block.text"
-                    class="w-full px-0 py-2 border-0 border-b border-transparent focus:border-[var(--color-accent-primary)] bg-transparent text-center text-lg font-bold transition-colors outline-none"
-                    style="color: var(--color-content-text);"
-                    :placeholder="getBlockPlaceholder(block.type)"
+                  <!-- contenteditable 编辑区（支持行内格式化：加粗/颜色/链接） -->
+                  <div
+                    v-ce="block.text"
+                    contenteditable="true"
+                    spellcheck="false"
+                    :data-placeholder="getBlockPlaceholder(block.type)"
+                    :class="[
+                      'ce-block w-full px-0 py-2 border-0 border-b border-transparent',
+                      'bg-transparent outline-none transition-colors',
+                      block.type === 'title'
+                        ? 'text-center text-lg font-bold'
+                        : 'text-sm leading-relaxed',
+                      block.meta?.aiImageUrl ? 'text-[var(--color-content-text-muted)] text-xs' : ''
+                    ]"
+                    style="color: var(--color-content-text); min-height: 2em;"
+                    @input="appStore.updateBlockText(block.id, ($event.target as HTMLElement).innerHTML)"
+                    @blur="appStore.updateBlockText(block.id, ($event.target as HTMLElement).innerHTML)"
                     @click.stop
+                    @focus="($event.target as HTMLElement).style.borderBottomColor = 'var(--color-accent-primary)'"
+                    @focusout="($event.target as HTMLElement).style.borderBottomColor = 'transparent'"
                   />
-                  <textarea
-                    v-else
-                    v-model="block.text"
-                    class="w-full px-0 py-2 border-0 border-b border-transparent focus:border-[var(--color-accent-primary)] bg-transparent resize-none transition-colors outline-none text-sm leading-relaxed"
-                    :class="{ 'text-[var(--color-content-text-muted)] text-xs': block.meta?.aiImageUrl }"
-                    style="color: var(--color-content-text);"
-                    :placeholder="getBlockPlaceholder(block.type)"
-                    rows="2"
-                    @click.stop
-                  ></textarea>
                 </div>
 
                 <!-- 图片模板 -->
@@ -389,6 +390,9 @@
       </div>
     </div>
   </div>
+
+  <!-- 行内格式浮动工具栏（全局挂一个，Teleport 到 body） -->
+  <InlineFormatToolbar />
 </template>
 
 <script setup lang="ts">
@@ -401,11 +405,29 @@ import { smartTextParser } from '../utils/textParser'
 import { getBlockTypeDisplayName } from '../utils/styleAssembler'
 import { uploadManager } from '../utils/uploadManager'
 import StyleSelector from '../components/StyleSelector.vue'
+import InlineFormatToolbar from '../components/InlineFormatToolbar.vue'
 const SvgTemplatePanel = defineAsyncComponent(() => import('../components/SvgTemplatePanel.vue'))
 import LayoutInserter from '../components/LayoutInserter.vue'
 import UploadProgress from '../components/UploadProgress.vue'
 import LazyImage from '../components/LazyImage.vue'
 import type { ContentBlock, BlockType } from '../types'
+
+/**
+ * v-ce 自定义指令：让 contenteditable div 与 block.text (HTML) 保持同步
+ * 规则：只在 mount 时和外部更新(非焦点状态)时写入 innerHTML，
+ * 避免用户输入时 Vue diff 重置光标。
+ */
+const vCe = {
+  mounted(el: HTMLElement, binding: { value: string }) {
+    el.innerHTML = binding.value ?? ''
+  },
+  updated(el: HTMLElement, binding: { value: string; oldValue: string }) {
+    // 仅在内容来自外部变化（非用户输入）时更新，且元素未聚焦
+    if (binding.value !== binding.oldValue && document.activeElement !== el) {
+      el.innerHTML = binding.value ?? ''
+    }
+  }
+}
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -752,6 +774,21 @@ const generateAiImage = async (block: ContentBlock) => {
 </script>
 
 <style scoped>
+/* contenteditable 块 placeholder */
+.ce-block:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-content-text-muted, #9ca3af);
+  pointer-events: none;
+  font-style: italic;
+}
+
+/* 链接样式（在编辑区内显示） */
+.ce-block :deep(a) {
+  color: var(--color-accent-primary, #0075de);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .block-list-move,
 .block-list-enter-active,
 .block-list-leave-active {

@@ -13,7 +13,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/editor',
     name: 'Step2',
-    component: () => import('../views/Step2Editor.vue'),
+    component: () => import('../views/Step2Curtain.vue'),
     meta: { title: '排版编辑', step: 2 }
   },
   {
@@ -46,12 +46,12 @@ router.beforeEach((to, _from, next) => {
 
   if (to.path === '/editor') {
     const hasContent = appStore.rawText || appStore.contentBlocks?.length ||
-      appStore.editorJson || localStorage.getItem('manifold_editor_autosave')
+      localStorage.getItem('local_step2_draft')
     if (!hasContent) { next('/'); return }
   }
 
   if (to.path === '/preview') {
-    const hasContent = appStore.editorJson || appStore.contentBlocks?.length
+    const hasContent = appStore.contentBlocks?.length
     if (!hasContent) { next('/editor'); return }
   }
 
