@@ -991,34 +991,6 @@ function goToPublish() {
             </div>
             <span class="text-[10px]" :class="goalProgress >= 100 ? 'text-green-600' : ''" :style="goalProgress >= 100 ? '' : 'color:var(--color-text-muted);'">{{ goalProgress }}%</span>
           </div>
-          <button
-            class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
-            :style="isFocusMode ? { backgroundColor: 'var(--color-badge-bg)', color: 'var(--color-accent-primary)', borderColor: 'rgba(0,117,222,0.3)' } : { color: 'var(--color-text-muted)', borderColor: 'rgba(0,0,0,0.12)' }"
-            @click="isFocusMode = !isFocusMode"
-            title="专注模式 (Ctrl+Shift+F)"
-            aria-label="专注模式"
-          >F</button>
-          <button
-            class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
-            :class="isTypewriter ? 'bg-green-100 text-green-600 border-green-300' : ''"
-            :style="isTypewriter ? '' : 'color:var(--color-text-muted); border-color:rgba(0,0,0,0.08);'"
-            onmouseover="if(!this.classList.contains('text-green-600')) { this.style.color='rgba(0,0,0,0.55)' }"
-            onmouseout="if(!this.classList.contains('text-green-600')) { this.style.color='var(--color-text-muted)' }"
-            @click="isTypewriter = !isTypewriter"
-            title="打字机滚动模式"
-            aria-label="打字机滚动模式"
-          >W</button>
-          <button
-            class="text-xs w-5 h-5 rounded border flex items-center justify-center transition-colors"
-            :class="{
-              'bg-amber-100 text-amber-700 border-amber-300': editorTheme === 'sepia',
-              'bg-gray-700 text-gray-200 border-gray-600': editorTheme === 'dark',
-            }"
-            :style="editorTheme === 'light' ? 'color:var(--color-text-muted); border-color:rgba(0,0,0,0.08);' : ''"
-            @click="editorTheme = editorTheme === 'light' ? 'sepia' : editorTheme === 'sepia' ? 'dark' : 'light'"
-            title="切换主题 (明/暖/暗)"
-            aria-label="切换编辑主题"
-          >T</button>
           <div class="flex items-center gap-0.5">
             <button class="text-[10px] w-4 h-5 flex items-center justify-center" style="color:var(--color-text-muted);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="cycleZoom(-1)" :disabled="zoomLevel <= 80" :class="zoomLevel <= 80 ? 'opacity-30' : ''" title="缩小" aria-label="缩小字体">-</button>
             <span class="text-[10px] w-7 text-center select-none" style="color:var(--color-text-muted);" :title="`缩放 ${zoomLevel}%`">{{ zoomLevel }}%</span>
@@ -1026,21 +998,8 @@ function goToPublish() {
           </div>
           <button class="text-xs w-5 h-5 rounded border flex items-center justify-center" style="color:var(--color-text-muted); border-color:rgba(0,0,0,0.08);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="toggleFullscreen" :title="isFullscreen ? '退出全屏 (Esc)' : '全屏编辑'" :aria-label="isFullscreen ? '退出全屏' : '全屏编辑'">{{ isFullscreen ? '&#x2716;' : '&#x26F6;' }}</button>
           <button class="text-xs w-5 h-5 rounded border flex items-center justify-center" style="color:var(--color-text-muted); border-color:rgba(0,0,0,0.08);" onmouseover="this.style.color='rgba(0,0,0,0.55)'" onmouseout="this.style.color='var(--color-text-muted)'" @click="shortcutHelpVisible = true" title="键盘快捷键 (?)" aria-label="键盘快捷键帮助">?</button>
-          <span
-            class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-            :class="{
-              'bg-orange-100 text-orange-600': configStore.mode === 'daily',
-              'bg-green-100 text-green-600': configStore.mode === 'three_rural',
-              'bg-purple-100 text-purple-600': configStore.mode === 'reprint'
-            }"
-          >{{ configStore.mode === 'daily' ? '日常' : configStore.mode === 'three_rural' ? '三下乡' : '转载' }}</span>
-          <span class="text-xs" style="color:rgba(0,0,0,0.25);">Manifold v2</span>
         </div>
         <div class="flex items-center gap-2">
-          <button class="px-3 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="emojiPickerVisible = true" title="插入表情">Emoji</button>
-          <button class="px-3 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="snapshotsVisible = true" title="版本快照">Snap</button>
-          <button class="px-3 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="exportMarkdown" title="Export as Markdown">MD</button>
-          <button class="px-3 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="openPreview" title="Preview HTML output">Preview</button>
           <button class="px-4 py-2 rounded-lg transition-colors text-sm" style="border:1px solid rgba(0,0,0,0.12); color:rgba(0,0,0,0.55);" onmouseover="this.style.background='var(--color-bg-warm)'" onmouseout="this.style.background=''" @click="copyAsWechatHtml">
             {{ copyStatus === 'copied' ? '已复制!' : '复制微信HTML' }}
           </button>
