@@ -96,6 +96,7 @@
 
       <!-- 幕布工作区 — 宽松间距，无 border 纯卡片 -->
       <div
+        ref="scrollAreaRef"
         class="flex-1 overflow-y-auto px-5 pb-24"
         @dragover.prevent="onAreaDragOver"
         @drop.prevent="onAreaDrop"
@@ -266,13 +267,11 @@
                     contenteditable="true"
                     spellcheck="false"
                     :data-placeholder="getBlockPlaceholder(block.type)"
+                    :data-block-type="block.type"
                     :class="[
                       'ce-block w-full px-0 py-2 border-0 border-b border-transparent',
                       'bg-transparent outline-none transition-colors',
-                      block.type === 'title'
-                        ? 'text-center text-lg font-bold'
-                        : 'text-sm leading-relaxed',
-                      block.meta?.aiImageUrl ? 'text-[var(--color-content-text-muted)] text-xs' : ''
+                      block.meta?.aiImageUrl ? 'opacity-70' : ''
                     ]"
                     style="color: var(--color-content-text); min-height: 2em;"
                     @input="appStore.updateBlockText(block.id, ($event.target as HTMLElement).innerHTML)"
@@ -438,6 +437,38 @@ const sidebarPanel = ref<'styles' | 'svg'>('styles')
 const generatingBlockId = ref<string | null>(null)
 const LOCAL_DRAFT_KEY = 'local_step2_draft'
 
+// 滚动区域 ref（用于拖拽时自动滚动）
+const scrollAreaRef = ref<HTMLElement | null>(null)
+let rafScrollId: number | null = null
+
+function startAutoScroll(clientY: number) {
+  if (rafScrollId !== null) { cancelAnimationFrame(rafScrollId); rafScrollId = null }
+  const el = scrollAreaRef.value
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  const ZONE = 64  // 距顶/底 64px 内触发滚动
+  const MAX_SPEED = 14
+
+  let speed = 0
+  if (clientY < rect.top + ZONE) {
+    speed = -MAX_SPEED * (1 - (clientY - rect.top) / ZONE)
+  } else if (clientY > rect.bottom - ZONE) {
+    speed = MAX_SPEED * (1 - (rect.bottom - clientY) / ZONE)
+  }
+  if (speed === 0) return
+
+  const step = () => {
+    if (!scrollAreaRef.value) return
+    scrollAreaRef.value.scrollTop += speed
+    rafScrollId = requestAnimationFrame(step)
+  }
+  rafScrollId = requestAnimationFrame(step)
+}
+
+function stopAutoScroll() {
+  if (rafScrollId !== null) { cancelAnimationFrame(rafScrollId); rafScrollId = null }
+}
+
 // 拖拽排序状态
 const draggingIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
@@ -515,6 +546,8 @@ const onDragOver = (e: DragEvent, index: number) => {
   } else {
     e.dataTransfer!.dropEffect = 'none'
   }
+
+  startAutoScroll(e.clientY)
 }
 
 const onDragLeave = () => {
@@ -551,6 +584,7 @@ const onDrop = (e: DragEvent, index: number) => {
 }
 
 const onDragEnd = () => {
+  stopAutoScroll()
   draggingIndex.value = null
   dragOverIndex.value = null
   dragOverHalf.value = null
@@ -565,6 +599,7 @@ const onAreaDragOver = (e: DragEvent) => {
   } else if (hasBlock) {
     e.dataTransfer!.dropEffect = 'move'
   }
+  startAutoScroll(e.clientY)
 }
 
 const onAreaDrop = (e: DragEvent) => {
@@ -774,7 +809,7 @@ const generateAiImage = async (block: ContentBlock) => {
 </script>
 
 <style scoped>
-/* contenteditable 块 placeholder */
+/* ===== contenteditable 块通用 ===== */
 .ce-block:empty::before {
   content: attr(data-placeholder);
   color: var(--color-content-text-muted, #9ca3af);
@@ -787,6 +822,53 @@ const generateAiImage = async (block: ContentBlock) => {
   color: var(--color-accent-primary, #0075de);
   text-decoration: underline;
   cursor: pointer;
+}
+
+/* ===== WYSIWYG 中文排版 — 与 styleAssembler 输出保持一致 ===== */
+
+/* 所有文本块通用：微软雅黑 + 行高 1.75 */
+.ce-block {
+  font-family: 微软雅黑, 'Microsoft YaHei', SimHei, STHeiti, sans-serif;
+  color: #333;
+}
+
+/* 正文：首行缩进 2em + 两端对齐 + 字间距 */
+.ce-block[data-block-type="body"] {
+  font-size: 14px;
+  line-height: 1.75;
+  text-align: justify;
+  text-indent: 2em;
+  letter-spacing: 1.5px;
+}
+
+/* 标题：居中 + 大字 + 加粗 */
+.ce-block[data-block-type="title"] {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+  text-indent: 0;
+}
+
+/* 引言：斜体 + 适当缩进 + 较小字号 */
+.ce-block[data-block-type="intro"] {
+  font-size: 13px;
+  line-height: 1.75;
+  text-align: justify;
+  letter-spacing: 1px;
+  text-indent: 0;
+  font-style: italic;
+  color: #555;
+}
+
+/* 结尾：和引言类似，右对齐 */
+.ce-block[data-block-type="outro"] {
+  font-size: 13px;
+  line-height: 1.75;
+  text-align: right;
+  letter-spacing: 1px;
+  text-indent: 0;
+  color: #555;
 }
 
 .block-list-move,
